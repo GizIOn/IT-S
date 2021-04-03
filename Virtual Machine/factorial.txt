@@ -1,0 +1,27 @@
+read 100
+put 110 170
+cmp 100 110
+jmpGreater @lim
+put 101 0
+cmp 100 101
+jmpLess @ngtv
+jmpEqual @zero
+put 102 1
+put 104 1
+pin @cycle
+multiply 100 102 102
+cmp 102 103
+jmpGreater @lim
+decrease 100 1
+cmp 100 104
+jmpGreater @cycle
+prt 102
+ext 0
+pin @ngtv
+ext -1
+pin @zero
+put 104 1
+prt 104
+ext 0
+pin @lim
+ext -1

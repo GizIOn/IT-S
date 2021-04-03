@@ -1,0 +1,58 @@
+put 97 -1
+put 98 0
+put 99 1
+read 100
+read 101
+cmp 100 98
+jmpEqual @zero1
+jmpLess @ngtv1
+pin @continue
+cmp 101 98
+jmpEqual @zero2
+jmpLess @ngtv2
+pin @cycle
+cmp 100 101
+jmpEqual @eq
+jmpGreater @firstGreater
+jmpLess @secondGreater
+pin @firstGreater
+div% 100 101 100
+cmp 100 98
+jmpEqual @ans1
+jmpGreater @cycle
+pin @secondGreater
+div% 101 100 101
+cmp 101 98
+jmpEqual @ans2
+jmpGreater @cycle
+pin @ngtv1
+module 100 100
+jmp @continue
+pin @ngtv2
+module 101 101
+jmp @cycle
+pin @eq
+prt 100
+ext 0
+pin @ans1
+prt 101
+ext 0
+pin @ans2
+prt 100
+ext 0
+pin @zero1
+cmp 101 98
+jmpEqual @notDefined
+jmpLess @secondNgtv
+prt 101
+ext 0
+pin @zero2
+cmp 100 98
+jmpEqual @notDefined
+prt 100
+ext 0
+pin @notDefined
+ext -1
+pin @secondNgtv
+module 101 101
+jmp @zero1
