@@ -1,8 +1,3 @@
-//import fs from "fs"
-//const fs1=require("fs").promises
-// node .\rle.js --escape -e in.* out.*
-// node .\rle.js --jump -d in.* out.*
-// node .\rle.js -h
 import {encodeEsc, decodeEsc} from "./escape.js"
 import {encodeJmp, decodeJmp} from "./jump.js"
 import fs from "fs";
