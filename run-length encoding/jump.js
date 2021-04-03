@@ -1,3 +1,5 @@
+"use strict"
+
 export function encodeJmp(input) {
     let output = []
     for (let i = 0; i < input.length; i++) {
