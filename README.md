@@ -5,3 +5,5 @@ Virtual Machine -- university project to make up a low-level programming languag
 and find the biggest common dividor of two given numbers
 
 run-length econding -- university project to "zip" files via jump-encoding and escape-encoding. Of course, decoding included.
+
+Haffman code also is a studying project;
