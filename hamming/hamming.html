@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hamming code</title>
+</head>
+
+<body>
+<h1><b>Hamming code</b></h1><br/>
+<br/>
+Enter a code of any length:
+<input id="toEncode" type="text" oninput="this.value=this.value.replace(/[^01]/, '')">
+<input id="encodeInput" type="button" value="Encode" onclick="return encode()">
+<br/>
+String encoded. Mess it up!
+<input id="toDecode" type="text" oninput="this.value=this.value.replace(/[^01]/, '')">
+<input id="decodeInput" type="button" value="Decode" onclick="return decode()">
+<br/>
+Made ok decoded
+<input id="result" type="text" disabled>
+<input id="resetInput" type="submit" value="Reset" onclick="return reset()">
+<br/>
+<br/>
+</body>
+
+<script type="text/javascript">
+    function reset() {
+        document.getElementById("toEncode").value = ""
+        document.getElementById("toDecode").value = ""
+        document.getElementById("result").value = ""
+    }
+
+    function decode() {
+        let toEncode = document.getElementById("toEncode").value,
+            [d, p] = getBytesLength(toEncode), matrixM = getMatrixM(d + p, p),
+            syndrome = getSyndrome(matrixM, document.getElementById("toDecode").value)
+        let output = evalSyndrome(syndrome);
+        document.getElementById("result").value = output[1]
+        alert(output[0])
+    }
+
+    function encode() {
+        let input = document.getElementById("toEncode").value,
+            [d, p] = getBytesLength(input),
+            encodedWordLen = d + p,
+            vector = getZeroVector(encodedWordLen, input),
+            parityBits = getParityBits(encodedWordLen, p, vector),
+            encodedWordArr = getEncodedArr(encodedWordLen, parityBits, input);
+        document.getElementById("toDecode").value = getWordFromArr(encodedWordArr);
+    }
+
+    function changeBit(word, i) {
+        return word[i] === "1"
+            ? word.slice(0, i) + "0" + word.slice(i + 1)
+            : word.slice(0, i) + "1" + word.slice(i + 1)
+    }
+
+    function evalSyndrome(syndrome = []) {
+        let lastInd = syndrome.length - 1, parityBits = syndrome.slice(0, lastInd),
+            controlBit = syndrome[lastInd].toString(),
+            output = "", allZeros = isAllZeros(parityBits),
+            temp = parseInt(parityBits.reverse().join(""), 2),
+            result = document.getElementById("result").value,
+            toDecode = document.getElementById("toDecode").value;
+        if (controlBit === "0") {
+            if (allZeros) {
+                output = "Ok, no mistakes"
+                result = toDecode
+            }
+            if (!allZeros) {
+                output = "Two mistakes"
+                result = toDecode
+            }
+        } else if (controlBit === "1") {
+            if (allZeros) {
+                output = `Mistake in last bit`
+                result = changeBit(toDecode, toDecode.length - 1)
+            }
+            if (!allZeros) {
+                output = `Mistake in ${temp} bit`
+                result = changeBit(toDecode, temp - 1)
+            }
+        }
+
+        return [output, result]
+
+        function isAllZeros(parityBits = []) {
+            for (let i = 0; i < parityBits.length; i++) {
+                if (parityBits[i] === "1") {
+                    return false
+                }
+            }
+            return true
+        }
+    }
+
+    function getSyndrome(matrixM = [], toDecode = "") {
+        let output = [], decodeM = makeDecodeMatrix(matrixM), vector = toDecode.split("");
+        for (let i = 0; i < decodeM.length; i++) {
+            let temp = 0
+            for (let j = 0; j < decodeM[0].length && j < vector.length; j++) {
+                temp += decodeM[i][j] * vector[j]
+            }
+            output.push((temp % 2).toString())
+        }
+
+        return output
+    }
+
+    function makeDecodeMatrix(matrixM) {
+        let decodeM = copyMatrix(matrixM)
+        decodeM[decodeM.length] = []
+        for (let i = 0; i < decodeM.length - 1; i++) {
+            decodeM[i].push("0")
+        }
+        for (let i = 0; i < decodeM[0].length; i++) {
+            decodeM[decodeM.length - 1].push("1")
+        }
+
+        return decodeM
+
+        function copyMatrix(toCopy = []) {
+            let output = []
+            for (let i = 0; i < toCopy.length; i++) {
+                output[i] = []
+                for (let j = 0; j < toCopy[0].length; j++) {
+                    output[i][j] = toCopy[i][j]
+                }
+            }
+
+            return output
+        }
+    }
+
+    function transpose(toTranspose) {
+        let output = []
+        for (let i = 0; i < toTranspose[0].length; i++) {
+            output[i] = []
+            for (let j = 0; j < toTranspose.length; j++) {
+                output[i][j] = toTranspose[j][i]
+            }
+        }
+        return output
+    }
+
+    function getWordFromArr(arr = []) {
+        let output = arr
+        return output.join("").split(",").join("")
+    }
+
+    function getEncodedArr(encodedWordLen, parityBits, input) {
+        let output = []
+        for (let i = 0, inpIndex = 0, pow = 0, j = 0;
+             i < encodedWordLen && inpIndex < input.length; i++) {
+            if (i + 1 === Math.pow(2, pow)) {
+                output.push(parityBits[j])
+                j++
+                pow++
+                continue
+            }
+            output.push(input[inpIndex])
+            inpIndex++
+        }
+        getControlBit();
+
+        return output
+
+        function getControlBit() {
+            let count = 0
+            for (let i = 0; i < output.length; i++) {
+                count += parseInt(output[i])
+            }
+            output.push((count % 2).toString())
+        }
+    }
+
+    function getParityBits(encodedWordLen, p, vector) {
+        let result = [], matrixH = getMatrixM(encodedWordLen, p)
+        for (let i = 0; i < matrixH.length; i++) {
+            let temp = 0
+            for (let j = 0; j < matrixH[0].length; j++)
+                temp += matrixH[i][j] * vector[j]
+            result.push((temp % 2).toString())
+        }
+        return result
+    }
+
+    function getZeroVector(encodedWordLen, input) {
+        let output = []
+        for (let i = 0, inpIndex = 0, pow = 0; i < encodedWordLen && inpIndex < input.length; i++) {
+            if (i + 1 === Math.pow(2, pow)) {
+                output.push("0")
+                pow++
+                continue
+            }
+            output.push(input[inpIndex])
+            inpIndex++
+        }
+
+        return output
+    }
+
+    function getMatrixM(encodedWordLen, p) {
+        let matrixOfStraightBin = putBinSymbolsIn(encodedWordLen, p),
+            length = matrixOfStraightBin.length,
+            output = initOutput(length);
+        for (let i = 0; i < matrixOfStraightBin[0].length; i++) {
+            for (let j = 0; j < length; j++) {
+                let element = matrixOfStraightBin[j].split("").reverse().join("")
+                output[j].push(element[i])
+            }
+        }
+
+        return transpose(output)
+
+        function initOutput(length) {
+            let output = []
+            for (let i = 0; i < length; i++) {
+                output.push([])
+            }
+
+            return output
+        }
+    }
+
+    function putBinSymbolsIn(encodedWordLen, p) {
+        let matrixOfBin = []
+        for (let i = 1; i < encodedWordLen + 1; i++) {
+            matrixOfBin.push(makeConstLength(i, p))
+        }
+        return matrixOfBin;
+    }
+
+    function makeConstLength(i = Number(), p) {
+        let numberInBin = i.toString(2)
+        for (let j = numberInBin.length; j < p; j++) {
+            numberInBin = "0" + numberInBin
+        }
+        return numberInBin;
+    }
+
+    function getBytesLength(input) {
+        let d = input.length,
+            p = Math.ceil(Math.log2(Math.abs(d) + 1 +
+            Math.ceil(Math.log2(Math.abs(d) + 1))))
+
+        return [d, p]
+    }
+</script>
+</html>
