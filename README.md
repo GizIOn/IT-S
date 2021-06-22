@@ -11,3 +11,5 @@ Haffman code also is a project for reducing size of incoming files;
 Float is a type for better accuracy in working with numbers
 
 Reverse Polish Notation (rpn) is a program to convert infix notation to postfix notation, and backwards. What to convert to is automatically determined.
+
+Substring search is a project, where you can search substrings in a text, via brute force, hash sum, hash Rabin-Karp, and automaton. 
