@@ -1,5 +1,4 @@
 # myCode
-Examples of my code and tasks I have solved over my career.
 
 Virtual Machine -- a low-level programming language and make it count factorial of a given number, 
 and find the biggest common dividor of two given numbers
